@@ -1,0 +1,11 @@
+version: '1'
+services:
+  frontend:
+    image: vamshi07/frontend:latest
+    ports:
+      - '3000:3000'
+  backend:
+    image: vamshi07/backend:latest
+    ports:
+      - '5000:5000'
+    
