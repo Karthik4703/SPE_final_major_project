@@ -21,7 +21,7 @@ function Header() {
       position="sticky"
       sx={{
         background:
-          "linear-gradient(90deg, rgba(240,13,205,1) 0%, rgba(0,212,255,1) 100%)",
+          "#2196F3",
       }}
     >
       <Toolbar>
