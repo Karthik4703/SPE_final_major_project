@@ -1,4 +1,5 @@
-import mongoose from "mongoose";
+// import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
 
@@ -19,7 +20,9 @@ const blogSchema = new Schema({
     type: mongoose.Types.ObjectId,
     ref: "User",
     required: true,
-  }
+  },
 });
 
-export default mongoose.model("Blog", blogSchema);
+// export default mongoose.model("Blog", blogSchema);
+
+module.exports = mongoose.model("Blog", blogSchema);
