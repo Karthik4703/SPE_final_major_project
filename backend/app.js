@@ -16,6 +16,11 @@ app.use("/api/blog", blogRouter);
 
 const PORT = process.env.PORT || 8000;
 
+const server = app.listen(process.env.PORT, () =>
+  console.log(`Server started on ${process.env.PORT}`)
+);
+
+
 mongoose
   .connect("mongodb+srv://vamshi07:Vamshikrishna7@cluster0.jqh71jp.mongodb.net/")
   .then(() => app.listen(PORT))
