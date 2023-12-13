@@ -1,10 +1,11 @@
 import "./App.css";
 import Header from "./components/Header";
-import Auth from "./components/Auth";
 import Blogs from "./components/Blogs";
 import UserBlogs from "./components/UserBlogs";
 import BlogDetail from "./components/BlogDetail";
 import AddBlog from "./components/AddBlog";
+import SignIn from "./components/SignIn"; // Import your SignIn component
+import SignUp from "./components/SignUp"; // Import your SignUp component
 import React, { useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -13,6 +14,7 @@ import { authActions } from "./store";
 function App() {
   const dispatch = useDispatch();
   const isLoggedIn = useSelector((state) => state.isLoggedIn);
+
   useEffect(() => {
     if (localStorage.getItem("userId")) {
       dispatch(authActions.signin());
@@ -21,15 +23,14 @@ function App() {
 
   return (
     <React.Fragment>
-      <Header>
-        <Header />
-      </Header>
-      <main>
+      <Header />
+      <main >
         <Routes>
           {!isLoggedIn ? (
             <>
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/" element={<Blogs />} />
+              <Route path="/signin" element={<SignIn />} />
+              <Route path="/signup" element={<SignUp />} />
+              <Route path="/" element={<SignIn/>} />
             </>
           ) : (
             <>
