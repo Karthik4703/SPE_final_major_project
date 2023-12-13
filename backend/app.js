@@ -1,9 +1,9 @@
-import express from "express";
-import mongoose from "mongoose";
-import dotenv from "dotenv";
-import blogRouter from "./routes/blog-routes.js";
-import router from "./routes/user-routes.js";
-import cors from "cors";
+const express = require("express");
+const mongoose = require("mongoose");
+const dotenv = require("dotenv");
+const blogRouter = require("./routes/blog-routes.js");
+const router = require("./routes/user-routes.js");
+const cors = require("cors");
 
 dotenv.config();
 const app = express();
