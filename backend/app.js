@@ -22,7 +22,7 @@ const server = app.listen(process.env.PORT, () =>
 
 
 mongoose
-  .connect("mongodb+srv://vamshi07:Vamshikrishna7@cluster0.jqh71jp.mongodb.net/")
+  .connect("mongodb+srv://dck150303:123@cluster0.xrfumnk.mongodb.net/")
   .then(() => app.listen(PORT))
   .then(() =>
     console.log(`Connected To Database and listening at PORT ${PORT}`)
