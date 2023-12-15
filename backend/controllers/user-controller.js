@@ -48,40 +48,19 @@ exports.signUp = async (req, res, next) => {
   return res.status(201).json({ user });
 };
 
-// exports.signIn = async (req, res, next) => {
-//   const { email, password } = req.body;
-
-//   let existingUser;
-//   try {
-//     existingUser = await User.findOne({ email });
-//   } catch (error) {
-//     return logger.info(error);
-//   }
-//   if (!existingUser) {
-//     return res.status(404).json({ message: "User Not Found! Register First" });
-//   }
-
-//   const isPasswordCorrect = bcrypt.compareSync(password, existingUser.password);
-//   if (!isPasswordCorrect) {
-//     return res.status(400).json({ message: "Incorrect Password!" });
-//   }
-//   return res
-//     .status(200)
-//     .json({ message: "Login Successful!!!", user: existingUser });
-// };
 exports.signIn = async (req, res, next) => {
   const { email, password } = req.body;
 
   try {
     let existingUser = await User.findOne({ email });
     if (!existingUser) {
-      logger.error("User not found. Login aborted.");
+      logger.info("User not found. Login aborted.");
       return res.status(404).json({ message: "User Not Found! Register First" });
     }
 
     const isPasswordCorrect = bcrypt.compareSync(password, existingUser.password);
     if (!isPasswordCorrect) {
-      logger.warn("Incorrect password. Login aborted.");
+      logger.info("Incorrect password. Login aborted.");
       return res.status(400).json({ message: "Incorrect Password!" });
     }
 
