@@ -1,5 +1,5 @@
 ---
-- name: Deploy RideReady Application
+- name: Deploy My Blog Application
   hosts: all
   vars:
     ansible_python_interpreter: /usr/bin/python3
