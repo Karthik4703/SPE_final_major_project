@@ -14,8 +14,6 @@
 //   ],
 // });
 
-module.exports = logger;
-
 const winston = require("winston");
 const { combine, timestamp, printf } = require("winston").format;
 

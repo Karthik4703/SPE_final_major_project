@@ -75,13 +75,13 @@ exports.signIn = async (req, res, next) => {
   try {
     let existingUser = await User.findOne({ email });
     if (!existingUser) {
-      logger.info("User not found. Login aborted.");
+      logger.error("User not found. Login aborted.");
       return res.status(404).json({ message: "User Not Found! Register First" });
     }
 
     const isPasswordCorrect = bcrypt.compareSync(password, existingUser.password);
     if (!isPasswordCorrect) {
-      logger.info("Incorrect password. Login aborted.");
+      logger.warn("Incorrect password. Login aborted.");
       return res.status(400).json({ message: "Incorrect Password!" });
     }
 
