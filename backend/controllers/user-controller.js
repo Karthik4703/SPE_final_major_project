@@ -2,93 +2,69 @@ const User = require("../model/User.js");
 const bcrypt = require("bcryptjs");
 const logger = require("../logger/logging.js");
 
-exports.getAllUser = async (req, res, next) => {
-  let users;
+exports.getAllUser = async (req, res) => {
   try {
-    users = await User.find();
+    const users = await User.find();
+    logger.info("Users fetched successfully");
+    return res.status(200).json({ users });
   } catch (err) {
-    return logger.info(err);
+    logger.error(`Error fetching users: ${err.message}`);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
-
-  if (!users) {
-    return res.status(404).json({ message: "No User Found" });
-  }
-  return res.status(200).json({ users });
 };
 
-exports.signUp = async (req, res, next) => {
+exports.signUp = async (req, res) => {
   const { name, email, password } = req.body;
 
-  let existingUser;
   try {
-    existingUser = await User.findOne({ email });
-  } catch (error) {
-    return logger.info(error);
-  }
-  if (existingUser) {
-    return res
-      .status(400)
-      .json({ message: "User Already exists! Login Instead" });
-  }
+    const existingUser = await User.findOne({ email });
 
-  const hashedPassword = bcrypt.hashSync(password);
-  const user = new User({
-    name,
-    email,
-    password: hashedPassword,
-    blogs: [],
-  });
+    if (existingUser) {
+      logger.info(`Signup failed. User with email ${email} already exists.`);
+      return res.status(400).json({ error: "User Already exists! Login Instead" });
+    }
 
-  try {
+    const hashedPassword = bcrypt.hashSync(password, 10); // Adjust the number of bcrypt rounds as needed
+    const user = new User({
+      name,
+      email,
+      password: hashedPassword,
+      blogs: [],
+    });
+
     await user.save();
-  } catch (error) {
-    return logger.info(error);
-  }
 
-  return res.status(201).json({ user });
+    logger.info(`User signed up successfully: ${user.email}`);
+    
+    return res.status(201).json({ user });
+  } catch (error) {
+    logger.error(`Error signing up: ${error.message}`);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
 };
 
-// exports.signIn = async (req, res, next) => {
-//   const { email, password } = req.body;
-
-//   let existingUser;
-//   try {
-//     existingUser = await User.findOne({ email });
-//   } catch (error) {
-//     return logger.info(error);
-//   }
-//   if (!existingUser) {
-//     return res.status(404).json({ message: "User Not Found! Register First" });
-//   }
-
-//   const isPasswordCorrect = bcrypt.compareSync(password, existingUser.password);
-//   if (!isPasswordCorrect) {
-//     return res.status(400).json({ message: "Incorrect Password!" });
-//   }
-//   return res
-//     .status(200)
-//     .json({ message: "Login Successful!!!", user: existingUser });
-// };
-exports.signIn = async (req, res, next) => {
+exports.signIn = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    let existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email });
+
     if (!existingUser) {
-      logger.info("User not found. Login aborted.");
-      return res.status(404).json({ message: "User Not Found! Register First" });
+      logger.warn("User not found. Login aborted.");
+      return res.status(404).json({ error: "User Not Found! Register First" });
     }
 
     const isPasswordCorrect = bcrypt.compareSync(password, existingUser.password);
-    if (!isPasswordCorrect) {
-      logger.info("Incorrect password. Login aborted.");
-      return res.status(400).json({ message: "Incorrect Password!" });
-    }
 
-    logger.info("Login successful");
-    return res.status(200).json({ message: "Login Successful!!!", user: existingUser });
+    if (isPasswordCorrect) {
+      logger.info("Login successful");
+      return res.status(200).json({ message: "Login Successful!!!", user: existingUser });
+    } else {
+      logger.error("Incorrect password. Login aborted.");
+      return res.status(400).json({ error: "Incorrect Password!" });
+    }
   } catch (error) {
-    logger.error(`Error signing in: ${error.message}`);
-    return res.status(500).json({ message: "Internal Server Error" });
+    logger.error(`Error during login: ${error.message}`);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 };

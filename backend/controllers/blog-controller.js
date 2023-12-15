@@ -3,115 +3,122 @@ const Blog = require("../model/Blog.js");
 const User = require("../model/User.js");
 const logger = require("../logger/logging.js");
 
-exports.getAllBlogs = async (req, res, next) => {
-  let blogs;
-
+exports.getAllBlogs = async (req, res) => {
   try {
-    blogs = await Blog.find().populate("user");
+    const blogs = await Blog.find().populate("user");
+    logger.info("Successfully fetched all blogs");
+    return res.status(200).json({ blogs });
   } catch (error) {
-    logger.info(error);
+    logger.error(`Error fetching blogs: ${error.message}`);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
-  if (!blogs) {
-    return res.status(404).json({ message: "No Blog Found!" });
-  }
-  return res.status(200).json({ blogs });
 };
 
-exports.addBlog = async (req, res, next) => {
+exports.addBlog = async (req, res) => {
   const { title, content, image, user } = req.body;
 
-  let existingUser;
   try {
-    existingUser = await User.findById(user);
-  } catch (error) {
-    return logger.info(error);
-  }
-  if (!existingUser) {
-    return res.status(400).json({ message: "Unable to Find user by this Id" });
-  }
+    const existingUser = await User.findById(user);
 
-  const blog = new Blog({
-    title,
-    content,
-    image,
-    user,
-  });
-  try {
+    if (!existingUser) {
+      logger.warn(`Unable to find user by id: ${user}`);
+      return res.status(400).json({ message: "Unable to find user by this Id" });
+    }
+
+    const blog = new Blog({ title, content, image, user });
+
     const session = await mongoose.startSession();
-
     session.startTransaction();
+
     await blog.save({ session });
     existingUser.blogs.push(blog);
     await existingUser.save({ session });
+
     await session.commitTransaction();
-    await session.endSession();
+    session.endSession();
+
+    logger.info(`Successfully added blog: ${blog.title}`);
+    return res.status(200).json({ blog });
   } catch (error) {
-    logger.info(error);
-    return res.status(500).json({ message: error });
+    logger.error(`Error adding blog: ${error.message}`);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
-  return res.status(200).json({ blog });
 };
 
-exports.updateBlog = async (req, res, next) => {
+exports.updateBlog = async (req, res) => {
   const { title, content, image } = req.body;
-
   const blogId = req.params.id;
 
-  let blog;
   try {
-    blog = await Blog.findByIdAndUpdate(blogId, {
-      title,
-      content,
-      image,
-    });
+    const blog = await Blog.findByIdAndUpdate(blogId, { title, content, image });
+
+    if (!blog) {
+      logger.warn(`Blog not found for update with id: ${blogId}`);
+      return res.status(404).json({ message: "Blog not found" });
+    }
+
+    logger.info(`Successfully updated blog: ${blog.title}`);
+    return res.status(200).json({ blog });
   } catch (error) {
-    return logger.info(error);
+    logger.error(`Error updating blog: ${error.message}`);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
-  if (!blog) {
-    return res.status(500).json({ message: "Unable to update Blog" });
-  }
-  return res.status(200).json({ blog });
 };
 
-exports.getBlogById = async (req, res, next) => {
-  const id = req.params.id;
+exports.getBlogById = async (req, res) => {
+  const blogId = req.params.id;
 
-  let blog;
   try {
-    blog = await Blog.findById(id);
+    const blog = await Blog.findById(blogId);
+
+    if (!blog) {
+      logger.warn(`Blog not found with id: ${blogId}`);
+      return res.status(404).json({ message: "Blog not found" });
+    }
+
+    logger.info(`Successfully fetched blog by ID: ${blog.title}`);
+    return res.status(200).json({ blog });
   } catch (error) {
-    return console.log(error);
+    logger.error(`Error fetching blog by ID: ${error.message}`);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
-  if (!blog) {
-    return res.status(404).json({ message: "No blog found!" });
-  }
-  return res.status(200).json({ blog });
 };
 
-exports.deleteBlog = async (req, res, next) => {
-  let blog;
+exports.deleteBlog = async (req, res) => {
   try {
-    blog = await Blog.findByIdAndRemove(req.params.id).populate("user");
+    const blog = await Blog.findByIdAndRemove(req.params.id).populate("user");
+
+    if (!blog) {
+      logger.warn(`Blog not found for deletion with id: ${req.params.id}`);
+      return res.status(404).json({ message: "Blog not found" });
+    }
+
     await blog.user.blogs.pull(blog);
     await blog.user.save();
-  } catch (err) {
-    logger.info(err);
+
+    logger.info(`Successfully deleted blog: ${blog.title}`);
+    return res.status(200).json({ message: "Successfully deleted" });
+  } catch (error) {
+    logger.error(`Error deleting blog: ${error.message}`);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
-  if (!blog) {
-    return res.status(500).json({ message: "Unable To Delete" });
-  }
-  return res.status(200).json({ message: "Successfully Delete" });
 };
 
-exports.getUserById = async (req, res, next) => {
-  let userBlogs;
+exports.getUserById = async (req, res) => {
+  const userId = req.params.id;
+
   try {
-    userBlogs = await User.findById(req.params.id).populate("blogs");
+    const userBlogs = await User.findById(userId).populate("blogs");
+
+    if (!userBlogs) {
+      logger.warn(`User not found with id: ${userId}`);
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    logger.info(`Successfully fetched user by ID: ${userBlogs.name}`);
+    return res.status(200).json({ user: userBlogs });
   } catch (error) {
-    logger.info(error);
+    logger.error(`Error fetching user by ID: ${error.message}`);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
-  if (!userBlogs) {
-    return res.status(400).json({ message: "No blogs found!" });
-  }
-  return res.status(200).json({ user: userBlogs });
 };
